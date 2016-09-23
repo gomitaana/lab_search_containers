@@ -1,0 +1,7 @@
+Searches    
+Solve the problem using three different algorithms. For each of these algorithms, create a script to run them. These scripts should have the name in bold:
+bfs: Breadth First Search
+dfs: Depth First Search
+A* search
+a_star_cons: Using a consistent heuristic of your choice
+a_star_incons: Using a non-consistent heuristic of your choice
