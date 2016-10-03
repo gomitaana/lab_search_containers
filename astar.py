@@ -6,6 +6,7 @@ import itertools
 class State(object):
     def __init__(self, string=None, containers=[], cost=0, steps=[]):
         self.cost       = cost
+        self.heuristicCost = 0
         self.steps      = steps
         self.containers = containers
 
@@ -18,8 +19,11 @@ class State(object):
     def getSteps(self):
         return "; ".join(map(str, self.steps)) + "\n"
 
-    def updateCost(self,action):
+    def updateCost(self,action): #g(n)
         self.cost = self.cost + 0.5 + 0.5 + abs(action[0] - action[1])
+    
+    def updateHeuristic(self,action, goal): #H(n)
+        self.heuristicCost = self.cost + goal.lookupDic[action[0]]
 
     def applyAction(self, action):
         x = self.containers[action[0]].pop()
@@ -58,18 +62,29 @@ class State(object):
 
     def __eq__(self, other):
         return str(self) == other
+    
+    def __cmp__(self, other):
+        return self
 
 
 class Goal(object):
     def __init__(self, string=None, containers=[], cost=0, steps=[]):
-        self.cost       = cost
-        self.steps      = steps
-        self.containers = containers
-        self.shouldCheck = []
+        self.cost           = cost
+        self.steps          = steps
+        self.containers     = containers
+        self.shouldCheck    = []
+        self.lookupDic      = {}
 
         if string:
             self.initializeContainer(string)
-
+            
+    def initializeDic(self):
+        for stack in self.containers:
+            if len(stack > 0):
+                for box in stack:
+                    d = {box,self.containers.index(stack)}
+                    self.lookupDic.update(d)
+        
     def initializeContainer(self, string):
         for stack in string.split("; "):
             c = stack.strip("()")
@@ -99,10 +114,10 @@ def valid_actions(state, height):
     possible_actions = itertools.product(space, repeat=2)
     return [action for action in possible_actions
                 if state.isValidAction(action, height)]
-
-
-
-if __name__ == '__main__':
+                
+        
+                
+if __name__ == "__main__":
     max_height    = -1
     frontier      = []
     explored      = set()
@@ -126,10 +141,10 @@ if __name__ == '__main__':
         # # Goal
         elif idx == 2:
             goal = Goal(string=line)
-
-    # DFS
+            
+    # A* cons
     while(len(frontier)):
-        node = frontier.pop()
+        node = frontier.pop(0)
         explored.add(node)
         for action in valid_actions(node, max_height):
             new_node = node.stateFromAction(action)
@@ -146,3 +161,4 @@ if __name__ == '__main__':
                     frontier.append(new_node)
     if not solutionFound:
         sys.stdout.write("No solution found\n")
+    

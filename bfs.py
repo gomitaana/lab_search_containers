@@ -134,7 +134,7 @@ if __name__ == '__main__':
         for action in valid_actions(node, max_height):
             new_node = node.stateFromAction(action)
             new_node.applyAction(action)
-            print str(new_node)
+            #print str(new_node)
             if new_node not in explored:
                 if goal == new_node:
                     sys.stdout.write(new_node.getCost())
