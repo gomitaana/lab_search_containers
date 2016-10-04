@@ -92,6 +92,9 @@ class Goal(object):
                 self.lookupDic[box] = idx
         
     def initializeContainer(self, string):
+        """
+        Read string and generate array of stacks
+        """
         for stack in string.split("; "):
             c = stack.strip("()")
             shouldCheck = True
@@ -107,6 +110,10 @@ class Goal(object):
             self.containers.append(c)
 
     def __eq__(self, other):
+        """
+        Override of equality function '==' to be able 
+        to compare states
+        """
         is_equal = True
         for idx, stack in enumerate(self.containers):
             if self.shouldCheck[idx]:
@@ -150,14 +157,17 @@ if __name__ == "__main__":
           
     # A* cons
     while(len(frontier)):
+        # Add get element with lowest cost
         node = heapq.heappop(frontier)
+        # Add to explored
         explored.add(node)
+        # Generate valid actions
         valid_actions = create_valid_actions(node, max_height)
         for action in valid_actions:
             new_node = node.stateFromAction(action)
             new_node.applyAction(action,goal)
-            #print str(new_node)
             if new_node not in explored:
+                # Print solution
                 if goal == new_node:
                     sys.stdout.write(new_node.getCost())
                     sys.stdout.write(new_node.getSteps())
@@ -165,11 +175,7 @@ if __name__ == "__main__":
                     solutionFound = True
                     break
                 else:
+                    # Sorted push of new node
                     heapq.heappush(frontier, new_node)
-        # print goal.lookupDic
-        # print valid_actions
-        # for state in frontier:
-        #     print state.heuristicCost, state.cost, state.steps
-        # break
     if not solutionFound:
         sys.stdout.write("No solution found\n")

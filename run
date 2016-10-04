@@ -1,5 +1,4 @@
 #!/bin/bash 
 
 #run < problem_file.in
-echo $2
-cat $2 | python bfs.py
+python a_star_cons.py

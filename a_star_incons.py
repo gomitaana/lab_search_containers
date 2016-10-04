@@ -2,6 +2,7 @@ import fileinput
 import copy
 import sys
 import itertools
+import heapq
 
 class State(object):
     def __init__(self, string=None, containers=[], cost=0, steps=[]):
@@ -20,16 +21,20 @@ class State(object):
         return "; ".join(map(str, self.steps)) + "\n"
 
     def updateCost(self,action): #g(n)
-        self.cost = self.cost + 0.5 + 0.5 + abs(action[0] - action[1])
+        self.cost += 0.5 + 0.5 + abs(action[0] - action[1])
     
-    def updateHeuristic(self,action, goal): #H(n)
-        self.heuristicCost = self.cost + goal.lookupDic[action[0]]
+    def updateFinalCost(self, action, goal): #H(n)
+        goal_location = goal.lookupDic[self.containers[action[0]][-1]]
+        self.heuristicCost = self.cost + abs(action[0] - goal_location)
 
-    def applyAction(self, action):
+    def applyAction(self, action, goal):
+        self.updateFinalCost(action, goal)
+        self.updateCost(action)
+        
         x = self.containers[action[0]].pop()
         self.containers[action[1]].append(x)
         self.steps.append(action)
-        self.updateCost(action)
+        
 
     def stateFromAction(self, action):
         new_state = State(containers=copy.deepcopy(self.containers),
@@ -64,7 +69,8 @@ class State(object):
         return str(self) == other
     
     def __cmp__(self, other):
-        return self
+        # return self
+        return cmp(self.heuristicCost, other.heuristicCost)
 
 
 class Goal(object):
@@ -77,13 +83,12 @@ class Goal(object):
 
         if string:
             self.initializeContainer(string)
+            self.initializeDic()
             
     def initializeDic(self):
-        for stack in self.containers:
-            if len(stack > 0):
-                for box in stack:
-                    d = {box,self.containers.index(stack)}
-                    self.lookupDic.update(d)
+        for idx, stack in enumerate(self.containers):
+            for box in stack:
+                self.lookupDic[box] = idx
         
     def initializeContainer(self, string):
         for stack in string.split("; "):
@@ -109,7 +114,7 @@ class Goal(object):
         return is_equal
 
 
-def valid_actions(state, height):
+def create_valid_actions(state, height):
     space = tuple(range(len(state.containers)))
     possible_actions = itertools.product(space, repeat=2)
     return [action for action in possible_actions
@@ -141,15 +146,15 @@ if __name__ == "__main__":
         # # Goal
         elif idx == 2:
             goal = Goal(string=line)
-            
+          
     # A* cons
     while(len(frontier)):
-        node = frontier.pop(0)
+        node = heapq.heappop(frontier)
         explored.add(node)
-        for action in valid_actions(node, max_height):
+        valid_actions = create_valid_actions(node, max_height)
+        for action in valid_actions:
             new_node = node.stateFromAction(action)
-            new_node.applyAction(action)
-            #print str(new_node)
+            new_node.applyAction(action,goal)
             if new_node not in explored:
                 if goal == new_node:
                     sys.stdout.write(new_node.getCost())
@@ -158,7 +163,6 @@ if __name__ == "__main__":
                     solutionFound = True
                     break
                 else:
-                    frontier.append(new_node)
+                    heapq.heappush(frontier, new_node)
     if not solutionFound:
         sys.stdout.write("No solution found\n")
-    
