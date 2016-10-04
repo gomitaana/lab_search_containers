@@ -21,23 +21,37 @@ class State(object):
     def getSteps(self):
         return "; ".join(map(str, self.steps)) + "\n"
 
-    def updateCost(self,action): #g(n)
+    def updateCost(self,action): 
+        """
+        Calculates g(n)
+        """
         self.cost += 0.5 + 0.5 + abs(action[0] - action[1])
     
-    def updateFinalCost(self, action, goal): #H(n)
+    def updateFinalCost(self, action, goal): 
+        """
+        Calcualtes g(n) + h(n)
+        """
         goal_location = goal.lookupDic[self.containers[action[0]][-1]]
         self.heuristicCost = self.cost + abs(action[0] - goal_location)
 
     def applyAction(self, action, goal):
+        """
+        Applies the action tho the current state
+        """
+        # Updates the cost
         self.updateFinalCost(action, goal)
         self.updateCost(action)
         
+        # Executes the actions
         x = self.containers[action[0]].pop()
         self.containers[action[1]].append(x)
         self.steps.append(action)
         
 
-    def stateFromAction(self, action):
+    def cloneState(self):
+        """
+        Clones a state
+        """
         new_state = State(containers=copy.deepcopy(self.containers),
                     cost=self.cost,
                     steps=copy.deepcopy(self.steps))
@@ -45,6 +59,9 @@ class State(object):
 
 
     def isValidAction(self, action, height):
+        """
+        Check if an action is valid based on the 
+        """
         return len(self.containers[action[1]]) + 1 <= height and \
             len(self.containers[action[0]]) - 1 >= 0
 
@@ -52,6 +69,9 @@ class State(object):
         self.containers = containers
 
     def initializeContainer(self, string):
+        """
+        Gets a string and parses it into a matrix
+        """
         for stack in string.split("; "):
             c = stack.strip("()")
             if len(c):
@@ -61,16 +81,29 @@ class State(object):
             self.containers.append(c)
 
     def __str__(self):
+        """
+        Override of str() method
+        """
         return str(self.containers)
 
     def __hash__(self):
+        """
+        Override of hashing function when pushing a state to a set
+        for visited states
+        """
         return hash(str(self.containers))
 
     def __eq__(self, other):
+        """
+        Overrides equality function to use '==' operator between states
+        """
         return str(self) == other
     
     def __cmp__(self, other):
-        # return self
+        """
+        Override of compare method, used when 
+        pushing to ordered queue to compare between states
+        """
         return cmp(self.heuristicCost, other.heuristicCost)
 
 
@@ -84,16 +117,21 @@ class Goal(object):
 
         if string:
             self.initializeContainer(string)
-            self.initializeDic()
+            self.initializeDict()
             
-    def initializeDic(self):
+    def initializeDict(self):
+        """
+        Initialize reverse lookup for stacks
+        Keys: letters
+        Values: stack index
+        """
         for idx, stack in enumerate(self.containers):
             for box in stack:
                 self.lookupDic[box] = idx
         
     def initializeContainer(self, string):
         """
-        Read string and generate array of stacks
+        Overrides initializeContainer to handle 'X'
         """
         for stack in string.split("; "):
             c = stack.strip("()")
@@ -123,6 +161,11 @@ class Goal(object):
 
 
 def create_valid_actions(state, height):
+    """
+    Generates the product of the containers and
+    check against the current state if the generated actions
+    are valid
+    """
     space = tuple(range(len(state.containers)))
     possible_actions = itertools.product(space, repeat=2)
     return [action for action in possible_actions
@@ -164,7 +207,7 @@ if __name__ == "__main__":
         # Generate valid actions
         valid_actions = create_valid_actions(node, max_height)
         for action in valid_actions:
-            new_node = node.stateFromAction(action)
+            new_node = node.cloneState()
             new_node.applyAction(action,goal)
             if new_node not in explored:
                 # Print solution
