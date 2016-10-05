@@ -2,6 +2,7 @@ import fileinput
 import copy
 import sys
 import itertools
+import time
 
 class State(object):
     def __init__(self, string=None, containers=[], cost=0, steps=[]):
@@ -128,6 +129,7 @@ if __name__ == '__main__':
             goal = Goal(string=line)
 
     # BFS
+    t0 = time.time()
     while(len(frontier)):
         node = frontier.pop(0)
         explored.add(node)
@@ -146,3 +148,4 @@ if __name__ == '__main__':
                     frontier.append(new_node)
     if not solutionFound:
         sys.stdout.write("No solution found\n")
+    #print time.time()

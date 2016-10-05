@@ -3,8 +3,8 @@ import copy
 import sys
 import itertools
 import heapq
+import time
 
-#run < problem_file.in
 class State(object):
     def __init__(self, string=None, containers=[], cost=0, steps=[]):
         self.cost       = cost
@@ -199,6 +199,7 @@ if __name__ == "__main__":
             goal = Goal(string=line)
           
     # A* cons
+    t0 = time.time()
     while(len(frontier)):
         # Add get element with lowest cost
         node = heapq.heappop(frontier)
@@ -222,3 +223,4 @@ if __name__ == "__main__":
                     heapq.heappush(frontier, new_node)
     if not solutionFound:
         sys.stdout.write("No solution found\n")
+    #print time.time()

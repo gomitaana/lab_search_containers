@@ -25,7 +25,7 @@ class State(object):
     
     def updateFinalCost(self, action, goal): #H(n)
         goal_location = goal.lookupDic[self.containers[action[0]][-1]]
-        self.heuristicCost = self.cost + abs(action[0] - goal_location)
+        self.heuristicCost = self.cost + abs(action[0] - goal_location[0]) + abs(action[0] - goal_location[1])
 
     def applyAction(self, action, goal):
         self.updateFinalCost(action, goal)
@@ -87,8 +87,8 @@ class Goal(object):
             
     def initializeDic(self):
         for idx, stack in enumerate(self.containers):
-            for box in stack:
-                self.lookupDic[box] = idx
+            for idy, box in enumerate(stack):
+                self.lookupDic[box] = [idx,idy]
         
     def initializeContainer(self, string):
         for stack in string.split("; "):
